@@ -17,22 +17,15 @@ abstract class zMCustomPostTypeBase {
     public function __construct() {
 
         add_filter( 'post_class', array( &$this, 'addPostClass' ) );
-
         add_action( 'init', array( &$this, 'abstractInit' ) );
-
-        add_action( 'wp_ajax_postTypeUpdate', array( &$this, 'postTypeUpdate' ) );
-        add_action( 'wp_ajax_postTypeDelete', array( &$this, 'postTypeDelete' ) );
-
-        add_action( 'wp_ajax_defaultUtilityUpdate', array( &$this, 'defaultUtilityUpdate' ) );
-
         add_action( 'wp_head', array( &$this, 'baseAjaxUrl' ) );
-        add_action( 'template_redirect', array( &$this, 'templateRedirect' ) );
 
         if ( is_admin() ){
             add_action( 'add_meta_boxes', array( &$this, 'metaSection' ) );
             add_action( 'save_post', array( &$this, 'metaSave' ) );
         }
     }
+
 
     /**
      * @note this has to be PUBLIC! but it is really should be private!
@@ -42,17 +35,6 @@ abstract class zMCustomPostTypeBase {
         $this->registerTaxonomy();
     }
 
-// public function setPostType( $type ) {
-//     if ( ! is_array( $type ) ) {
-//         return false;
-//     } else {
-//         $this->post_type = $type;
-//     }
-// }
-
-// public function getPostType() {
-//     return $this->post_type;
-// }
 
     /**
      * Regsiter an unlimited number of CPTs based on an array of parmas.
@@ -170,6 +152,7 @@ abstract class zMCustomPostTypeBase {
         return $this->post_type;
     } // End 'function'
 
+
     /**
      * Wrapper for register_taxonomy() to register an unlimited
      * number of taxonomies for a given CPT.
@@ -239,45 +222,6 @@ abstract class zMCustomPostTypeBase {
 
 
     /**
-     * Updates the 'utiltily', i.e. taxonomies, of a post
-     *
-     * @package Ajax
-     *
-     * @param (int)post id, (array)taxonomies
-     *
-     * @uses is_user_logged_in()
-     * @uses current_user_can()
-     * @uses wp_set_post_terms()
-     *
-     * @todo add chcek_ajax_refer()
-     */
-    public function defaultUtilityUpdate( $post_id=null, $taxonomies=null) {
-
-        if ( !is_user_logged_in() )
-            return false;
-
-        if ( current_user_can( 'publish_posts' ) )
-            $status = 'publish';
-        else
-            $status = 'pending';
-
-        $post_id = (int)$_POST['PostID'];
-
-        unset( $_POST['action'] );
-        unset( $_POST['PostID'] );
-
-        $taxonomies = $_POST;
-
-        foreach( $taxonomies as $taxonomy => $term ) {
-            wp_set_post_terms( $post_id, $term, $taxonomy );
-            // add check to see if terms are new
-            //$new_terms[]['term'] = get_term_by( 'id', $term, &$taxonomy );
-        }
-
-        die();
-    } // entryUtilityUpdate
-
-    /**
      * Delets a post given the post ID, post will be moved to the trash
      *
      * @package Ajax
@@ -293,7 +237,7 @@ abstract class zMCustomPostTypeBase {
      */
     public function postTypeDelete( $id=null ) {
 
-        check_ajax_referer( 'bmx-re-ajax-forms', 'security' );
+        // check_ajax_referer( 'bmx-re-ajax-forms', 'security' );
 
         $id = (int)$_POST['post_id'];
 
@@ -314,6 +258,7 @@ abstract class zMCustomPostTypeBase {
         die();
     } // postTypeDelete
 
+
     /**
      * Print our ajax url in the footer
      *
@@ -326,6 +271,7 @@ abstract class zMCustomPostTypeBase {
     public function baseAjaxUrl() {
         print '<script type="text/javascript"> var ajaxurl = "'. admin_url("admin-ajax.php") .'";</script>';
     } // End 'baseAjaxUrl'
+
 
     /**
      * Adds additional classes to post_class() for additional CSS styling and JavaScript manipulation.
@@ -353,6 +299,7 @@ abstract class zMCustomPostTypeBase {
         }
         return $classes;
     } // End 'addPostClass'
+
 
     /**
      * Basically this is a wrapper for 'add_meta_box'. Allowing
@@ -385,6 +332,7 @@ abstract class zMCustomPostTypeBase {
             }
         }
     }
+
 
     /**
      * Renders the HTML for each 'meta section'
@@ -431,19 +379,20 @@ abstract class zMCustomPostTypeBase {
         }
     }
 
-public function buildMetaKeys(){
-    global $post;
 
-    foreach( $this->meta_sections as $section_id => $section ){
-        foreach( $section['fields'] as $field ){
-            if ( empty( $field['name'] ) )
-                $this->meta_keys[] = $post->post_type . '_' . str_replace(' ', '-', strtolower( $field['label'] ) );
-            else
-                $this->meta_keys[] = $field['name'];
+    public function buildMetaKeys(){
+        global $post;
+
+        foreach( $this->meta_sections as $section_id => $section ){
+            foreach( $section['fields'] as $field ){
+                if ( empty( $field['name'] ) )
+                    $this->meta_keys[] = $post->post_type . '_' . str_replace(' ', '-', strtolower( $field['label'] ) );
+                else
+                    $this->meta_keys[] = $field['name'];
+            }
         }
+        return $this->meta_keys;
     }
-    return $this->meta_keys;
-}
 
 
     /**
@@ -486,45 +435,6 @@ public function buildMetaKeys(){
                     $value = $value[0]."\n";
                 }
                 update_post_meta( $_POST['post_ID'], $key, $value );
-            }
-        }
-    }
-
-    public function templateRedirect(){
-
-        global $post_type;
-
-        /**
-         * Support for "themeing" from the
-         * wp-content/my-theme/ directory
-         */
-        $theme_dir = get_stylesheet_directory() . '/';
-        $theme_files = array(
-            'single' => $theme_dir . 'single-' . $post_type . '.php',
-            'archive' => $theme_dir . 'archive-' . $post_type . '.php',
-            'default' => $theme_dir . 'index.php'
-            );
-
-        $fix_me = '/opt/local/apache2/htdocs/events-engine/html/wp-content/plugins/zm-events-engine/';
-        $template = array(
-            'post_type' => $post_type,
-            'single'    => $fix_me . 'single-'.$post_type.'.php'
-        );
-
-        /**
-         * If this is a single template, and the post type is
-         * our custom post type.
-         */
-        if ( is_single() && $post_type == $this->post_type[0]['type'] ) {
-            if ( file_exists( $theme_files['single'] ) ) {
-                load_template( $theme_files['single']  );
-                exit();
-            } elseif( file_exists( $template['single'] ) ) {
-                load_template( $template['single'] );
-                exit;
-            } else {
-                load_template( $theme_files['default'] );
-                exit;
             }
         }
     }

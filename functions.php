@@ -278,3 +278,23 @@ function zm_base_build_options( $taxonomy=null, $value=null ) {
     <?php endif; ?>
 <?php }
 endif;
+
+add_filter( 'manage_edit-events_columns', 'set_custom_edit_book_columns' );
+function set_custom_edit_book_columns($columns) {
+    return $columns
+         + array('events_start-date' => __('Start Date'),
+                 'events_end-date' => __('End Date'));
+}
+
+add_action( 'manage_events_posts_custom_column' , 'custom_book_column', 10, 2 );
+function custom_book_column( $column, $post_id ) {
+    switch ( $column ) {
+      case 'events_start-date':
+        echo get_post_meta( $post_id , 'events_start-date' , true );
+        break;
+
+      case 'events_end-date':
+        echo get_post_meta( $post_id , 'events_end-date' , true );
+        break;
+    }
+}
