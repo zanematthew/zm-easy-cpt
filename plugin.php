@@ -95,36 +95,8 @@ function zm_reqiure( $dir=null ){
         $models[] = $model;
         require_once $dir . 'post_types/'.$model . '.php';
     }
-
-    /**
-     * Our enqueue action handles the loading of admin and front end CSS
-     * and JS files.
-     */
-    do_action( 'zm_easy_cpt_enqueue', $models, $dir );
 }
 add_action( 'zm_easy_cpt_require', 'zm_reqiure', 8, 10 );
-
-
-/**
- * Auto enqueue Admin and front end CSS and JS files.
- * @todo We should be able to derive the $models array.
- */
-function zm_enqueue( $models=null, $dir=null, $dependencies=array() ){
-
-    $dependencies[] = 'jquery';
-    $my_plugins_url = plugins_url( basename( $dir ) . '/assets/' );
-
-    foreach( $models as $model ){
-        // @todo would rather hook into 'admin_enqueue_scripts' for admin
-        if ( is_admin() ){
-            $admin = '_admin';
-        } else {
-            $admin = null;
-        }
-        wp_enqueue_script( "zm-ev-{$model}-{$admin}-script", $my_plugins_url . $model . $admin . '.js', $dependencies  );
-    }
-}
-add_action( 'zm_easy_cpt_enqueue', 'zm_enqueue', 9, 2 );
 
 
 function zm_create_assets( $models=null, $dir=null ){

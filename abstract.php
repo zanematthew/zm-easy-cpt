@@ -13,6 +13,8 @@ abstract class zMCustomPostTypeBase {
     public $meta_section = array();
     public $post_type;
     public $meta_keys = array();
+    public $models = array();
+    public $asset_url;
 
     public function __construct() {
 
@@ -33,6 +35,7 @@ abstract class zMCustomPostTypeBase {
     public function abstractInit(){
         $this->registerPostType();
         $this->registerTaxonomy();
+        $this->enqueueScripts();
     }
 
 
@@ -220,6 +223,26 @@ abstract class zMCustomPostTypeBase {
         return $this->taxonomy;
     } // End 'function'
 
+
+    /**
+     * Auto enqueue Admin and front end CSS and JS files.
+     * @todo We should be able to derive the $models array.
+     */
+    public function enqueueScripts(){
+
+        $dependencies[] = 'jquery';
+        $my_plugins_url = $this->asset_url;
+
+        foreach( $this->models as $model ){
+            // @todo would rather hook into 'admin_enqueue_scripts' for admin
+            if ( is_admin() ){
+                $admin = '_admin';
+            } else {
+                $admin = null;
+            }
+            wp_enqueue_script( "zm-ev-{$model}-{$admin}-script", $my_plugins_url . $model . $admin . '.js', $dependencies  );
+        }
+    }
 
     /**
      * Delets a post given the post ID, post will be moved to the trash
