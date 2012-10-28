@@ -388,9 +388,12 @@ abstract class zMCustomPostTypeBase {
                 $tmp_value = null;
             }
 
+            empty( $field['class'] ) ? $class = null : $class = $field['class'];
+            empty( $field['placeholder'] ) ? $placeholder = null : $placeholder = $field['placeholder'];
+
             switch( $field['type'] ){
                 case 'text': // type="text"
-                    print "<p><label>{$label}</label><input type='{$field['type']}' class='{$field['class']}' name='{$name}' value='{$tmp_value}' placeholder='{$field['placeholder']}'/></p>";
+                    print "<p><label>{$label}</label><input type='{$field['type']}' class='{$class}' name='{$name}' value='{$tmp_value}' placeholder='{$placeholder}'/></p>";
                     break;
                 case 'description':
                     print "$tmp_value";
