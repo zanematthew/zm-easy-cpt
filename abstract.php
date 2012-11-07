@@ -13,7 +13,6 @@ abstract class zMCustomPostTypeBase {
     public $meta_section = array();
     public $post_type;
     public $meta_keys = array();
-    public $models = array();
     public $asset_url;
 
     public function __construct() {
@@ -30,7 +29,7 @@ abstract class zMCustomPostTypeBase {
 
 
     /**
-     * @note this has to be PUBLIC! but it is really should be private!
+     * Run the following methods when this Class is called
      */
     public function abstractInit(){
         $this->registerPostType();
@@ -44,7 +43,6 @@ abstract class zMCustomPostTypeBase {
      *
      * @uses register_post_type()
      * @uses wp_die()
-     *
      * @todo Currently NOT ALL the args are mapped to this method
      * @todo Support Capabilities
      */
@@ -225,22 +223,25 @@ abstract class zMCustomPostTypeBase {
 
 
     /**
-     * Auto enqueue Admin and front end CSS and JS files.
-     * @todo We should be able to derive the $models array.
+     * Auto enqueue Admin and front end CSS and JS files. Based ont the post type.
+     * @note CSS and JS files MUST be located in the following location:
+     * wp-content/{$my-plugin}/assets/{$my_post_type}.css
+     * wp-content/{$my-plugin}/assets/{$my_post_type}_admin.css
+     * wp-content/{$my-plugin}/assets/{$my_post_type}.js
+     * wp-content/{$my-plugin}/assets/{$my_post_type}_admin.js
      */
     public function enqueueScripts(){
 
         $dependencies[] = 'jquery';
         $my_plugins_url = $this->asset_url;
 
-        foreach( $this->models as $model ){
-            // @todo would rather hook into 'admin_enqueue_scripts' for admin
+        foreach( $this->post_type as $post ){
             if ( is_admin() ){
                 $admin = '_admin';
             } else {
                 $admin = null;
             }
-            wp_enqueue_script( "zm-ev-{$model}-{$admin}-script", $my_plugins_url . $model . $admin . '.js', $dependencies  );
+            wp_enqueue_script( "zm-ev-{$post['type']}{$admin}-script", $my_plugins_url . $post['type'] . $admin . '.js', $dependencies  );
         }
     }
 
@@ -248,10 +249,7 @@ abstract class zMCustomPostTypeBase {
      * Delets a post given the post ID, post will be moved to the trash
      *
      * @package Ajax
-     *
      * @param (int) post id
-     *
-     * @uses check_ajax_referer
      * @uses is_wp_error
      * @uses is_user_logged_in
      * @uses wp_trash_post
@@ -406,6 +404,9 @@ abstract class zMCustomPostTypeBase {
     }
 
 
+    /**
+     * Build our unique keys for each meta section
+     */
     public function buildMetaKeys(){
         global $post;
 
