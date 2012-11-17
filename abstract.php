@@ -1,12 +1,7 @@
 <?php
 /**
- *
- * This is used to regsiter a custom post type, custom taxonomy and provide template redirecting.
- *
- * This abstract class defines some base functions for using Custom Post Types. You should not have to
- * edit this abstract, only add additional methods if need be. You must use what is provided for you
- * in the interface.
- *
+ * This file contains the Base Class that is to be extended by your child class
+ * to regsiter a Custom Post Type, Custom Taxonomy, and Custom Meta Fields.
  */
 abstract class zMCustomPostTypeBase {
 
@@ -109,26 +104,9 @@ abstract class zMCustomPostTypeBase {
                 }
             }
 
-            // @todo make defaults optional
             $args = array(
                 'labels' => $labels,
                 'public' => true,
-//                'capability_type' => 'bmx-race-schedule',
-                //'capability_type' => 'post',
-//                'map_meta_cap' => true,
-/*
-                'capabilities' => array(
-                                'publish_posts' => 'publish_bmx-race-schedules',
-                                'edit_posts' => 'edit_bmx-race-schedules',
-                                'edit_others_posts' => 'edit_others_bmx-race-schedules',
-                                'delete_posts' => 'delete_bmx-race-schedules',
-                                'delete_others_posts' => 'delete_others_bmx-race-schedules',
-                                'read_private_posts' => 'read_private_bmx-race-schedules',
-                                'edit_post' => 'edit_bmx-race-schedule',
-                                'delete_post' => 'delete_bmx-race-schedule',
-                                'read_post' => 'read_bmx-race-schedule',
-                            ),
-*/
                 'supports' => $supports,
                 'rewrite' => $rewrite,
                 'hierarchical' => true,

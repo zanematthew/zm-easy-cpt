@@ -1,9 +1,5 @@
 <?php
 /**
- * Global Statuses to be used for validation *
- */
-
-/**
  * Load the needed JavaScripts and CSS
  */
 function zm_easy_cpt_scripts() {

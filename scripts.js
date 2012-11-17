@@ -1,5 +1,8 @@
 jQuery( document ).ready(function( $ ){
 
+    /**
+     * Ajax URL MUST be defined for this file to work!
+     */
     if ( typeof( ajaxurl ) == "undefined" ) return;
 
     /**
@@ -28,12 +31,15 @@ jQuery( document ).ready(function( $ ){
             dataType: 'json',
             global: false,
             success: function( msg ){
-                showMessage( msg );
+                zm_show_message( msg );
             }
         });
     }
 
-    function showMessage( msg ) {
+    /**
+     * Toggles a message.
+     */
+    function zm_show_message( msg ) {
         if ( ! msg ) return;
         jQuery('.zm-msg-target').toggleClass( msg.cssClass );
         jQuery('.zm-msg-target').fadeIn().html( msg.description ).delay(2000).fadeOut();
