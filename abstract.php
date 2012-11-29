@@ -220,6 +220,7 @@ abstract class zMCustomPostTypeBase {
                 $admin = null;
             }
             wp_enqueue_script( "zm-ev-{$post['type']}{$admin}-script", $my_plugins_url . $post['type'] . $admin . '.js', $dependencies  );
+            wp_enqueue_style(  "zm-ev-{$post['type']}{$admin}-style", $my_plugins_url . $post['type'] . $admin . '.css' );
         }
     }
 
