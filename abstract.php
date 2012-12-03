@@ -315,7 +315,7 @@ abstract class zMCustomPostTypeBase {
         global $post_type;
 
         // Enusre this ONLY gets ran on $post_type pages
-        if ( $post_type != strtolower( get_called_class()  ) )
+        if ( $post_type != strtolower( get_called_class() ) )
             return;
 
         if ( ! empty( $this->meta_sections ) ){
@@ -372,7 +372,8 @@ abstract class zMCustomPostTypeBase {
                 case 'text': // type="text"
                     print "<p><label>{$label}</label><input type='{$field['type']}' class='{$class}' name='{$name}' value='{$tmp_value}' placeholder='{$placeholder}'/></p>";
                     break;
-                case 'description':
+                case 'description': // If using a function make sure it returns!
+                case 'html': // Just add your stuff in the "value => 'anything you want"
                     print "$tmp_value";
                     break;
                 default:
