@@ -146,6 +146,10 @@ function zm_base_build_options( $taxonomy=null, $value=null ) {
         $multiple = false;
     }
 
+    if ( empty( $default ) ){
+        $default = null;
+    }
+
     if ( !isset( $label ) )
         $label = $taxonomy;
 
@@ -185,8 +189,7 @@ function zm_base_build_options( $taxonomy=null, $value=null ) {
     <fieldset class="zm-base-<?php echo $taxonomy; ?>-container <?php echo $taxonomy; ?>-container">
     <label class="zm-base-title"><?php echo $label; ?></label>
     <select name="<?php echo $taxonomy; ?><?php if ( $multiple=='multiple="multiple"') print '[]'; ?>" <?php echo $multiple; ?> <?php echo $extra_data; ?> class="<?php echo $extra_class; ?>" id="" <?php echo $multiple; ?>>
-        <?php // Support for placeholder ?>
-        <option></option>
+        <option><?php print $default; ?></option>
         <?php foreach( $terms as $term ) : ?>
             <?php if ( ! empty( $current_terms )) : ?>
             <?php for ( $i=0, $count=count($current_terms); $i <= $count; $i++ ) : ?>
