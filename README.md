@@ -52,7 +52,7 @@ To this!
 <?php
 $book = New Book();
 $post_type = 'book';
-$contact->post_type = array(
+$book->post_type = array(
     array(
         'name' => ucwords( $post_type ),
         'type' => $post_type,
@@ -157,3 +157,5 @@ Are you using zM Easy CPT? If so let me know so I can add your site to the list.
 
 * * *
 Copyright (c) Zane M. Kolnik
+
+script to create these post_type, functions/

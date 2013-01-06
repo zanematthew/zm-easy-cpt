@@ -345,7 +345,7 @@ abstract class zMCustomPostTypeBase {
      */
     public function metaSectionRender( $post, $args ){
         foreach( $args['args'] as $field ){
-
+            $name = null;
             if ( empty( $field['label'] ) ){
                 $label = null;
             } else {

@@ -6,12 +6,15 @@
  * Version: 0.1-beta
  * Author: Zane M. Kolnik
  * Author URI: http://zanematthew.com/
- * License: --
+ * License: GPL
  */
 
 
 define( 'ZM_EASY_CPT_VERSION', '0.1-beta' );
 define( 'ZM_EASY_CPT_OPTION', 'zm_easy_cpt_version' );
+
+ini_set('display_errors', 'on');
+error_reporting( E_ALL );
 
 require_once 'functions.php';
 require_once 'abstract.php';
