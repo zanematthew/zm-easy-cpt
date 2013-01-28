@@ -341,3 +341,40 @@ function zm_create_assets( $models=null, $dir=null ){
         }
     }
 }
+
+function zm_base_build_select( $params=null ){
+
+    extract( $params );
+
+    if ( empty( $extra_data ) )
+        $extra_data = null;
+
+    if ( empty( $extra_class ) )
+        $extra_class = null;
+
+    if ( ! empty( $multiple ) ) {
+        $multiple = 'multiple="multiple"';
+    } else {
+        $multiple = false;
+    }
+
+    if ( empty( $default ) ){
+        $default = '-- Select a Venue --';
+    }
+    if ( empty( $current ) )
+        $current = false;
+    ?>
+    <fieldset class="zm-ev-state-container">
+    <label class="zm-base-title">State</label>
+    <select name="<?php echo $key; ?>" <?php echo $multiple; ?> <?php echo $extra_data; ?> class="<?php echo $extra_class; ?>" id="" <?php echo $multiple; ?>>
+        <option value=""><?php print $default; ?></option>
+        <?php foreach( $items as $item ) : ?>
+            <option value="<?php print $item['id']; ?>"
+                <?php if ( is_array( $current ) ) : foreach( $current as $c ) : selected( $item['id'], $c ); ?>
+                <?php endforeach; else : selected( $item['id'], $current ); endif; ?>>
+                <?php print $item['name']; ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
+    </fieldset>
+<?php }
