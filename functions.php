@@ -360,7 +360,7 @@ function zm_base_build_select( $params=null ){
     }
 
     if ( empty( $default ) ){
-        $default = '-- Select a Venue --';
+        $default = false;
     }
     if ( empty( $current ) )
         $current = false;
@@ -368,7 +368,7 @@ function zm_base_build_select( $params=null ){
     <fieldset class="zm-ev-state-container">
     <label class="zm-base-title">State</label>
     <select name="<?php echo $key; ?>" <?php echo $multiple; ?> <?php echo $extra_data; ?> class="<?php echo $extra_class; ?>" id="">
-        <option value=""><?php print $default; ?></option>
+        <?php if ( $default ) : ?><option value=""><?php print $default; ?></option><?php endif; ?>
         <?php foreach( $items as $item ) : ?>
             <option value="<?php print $item['id']; ?>"
                 <?php if ( is_array( $current ) ) : foreach( $current as $c ) : selected( $item['id'], $c ); ?>
