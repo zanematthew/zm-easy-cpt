@@ -354,6 +354,7 @@ function zm_base_build_select( $params=null ){
 
     if ( ! empty( $multiple ) ) {
         $multiple = 'multiple="multiple"';
+        $key .= "[]";
     } else {
         $multiple = false;
     }
@@ -366,7 +367,7 @@ function zm_base_build_select( $params=null ){
     ?>
     <fieldset class="zm-ev-state-container">
     <label class="zm-base-title">State</label>
-    <select name="<?php echo $key; ?>" <?php echo $multiple; ?> <?php echo $extra_data; ?> class="<?php echo $extra_class; ?>" id="" <?php echo $multiple; ?>>
+    <select name="<?php echo $key; ?>" <?php echo $multiple; ?> <?php echo $extra_data; ?> class="<?php echo $extra_class; ?>" id="">
         <option value=""><?php print $default; ?></option>
         <?php foreach( $items as $item ) : ?>
             <option value="<?php print $item['id']; ?>"
