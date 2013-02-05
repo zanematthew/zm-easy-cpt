@@ -306,15 +306,16 @@ function zm_easy_cpt_reqiure( $dir=null ){
  * my-contact-plugin/assets/contacts_admin.css
  */
 function zm_create_assets( $models=null, $dir=null ){
+
     if ( ! is_dir( $dir . 'assets' ) ){
-        wp_mkdir_p( $dir . 'assets' );
+        if ( ! wp_mkdir_p( $dir . 'assets' ) )
+            wp_die("Couldn't make assets dir, don't run the action or make the dir writeable");
     }
 
     $assets_dir = $dir . 'assets/';
 
     foreach( $models as $model ){
         $date = date('F j, Y, g:i a');
-
         $files = array(
             array(
                 'file' => $assets_dir . $model . '_admin.css',
@@ -336,11 +337,12 @@ function zm_create_assets( $models=null, $dir=null ){
 
         foreach( $files as $file ){
             if ( ! file_exists( $file['file'] ) ){
-                @file_put_contents( $file['file'], $file['desc'] );
+                file_put_contents( $file['file'], $file['desc'] );
             }
         }
     }
 }
+add_action('zm_easy_cpt_create_assets','zm_create_assets', 99, 2);
 
 function zm_base_build_select( $params=null ){
 
