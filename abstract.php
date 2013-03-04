@@ -14,6 +14,7 @@ abstract class zMCustomPostTypeBase {
 
         add_filter( 'post_class', array( &$this, 'addPostClass' ) );
         add_action( 'init', array( &$this, 'abstractInit' ) );
+        add_action( 'admin_init', array( &$this, 'adminInit' ) );
         add_action( 'wp_head', array( &$this, 'baseAjaxUrl' ) );
 
         if ( is_admin() ){
@@ -30,6 +31,19 @@ abstract class zMCustomPostTypeBase {
         $this->registerPostType();
         $this->registerTaxonomy();
         $this->enqueueScripts();
+    }
+
+    public function adminInit(){
+
+        $dependencies[] = 'jquery';
+        $my_plugins_url = $this->asset_url;
+
+        foreach( $this->post_type as $post ){
+            if ( ! empty( $_GET['post_type'] ) && $_GET['post_type'] == $post['type'] ){
+                wp_enqueue_script( "zm-ev-{$post['type']}-admin-script", $my_plugins_url . $post['type'] . '_admin.js', $dependencies  );
+                wp_enqueue_style(  "zm-ev-{$post['type']}-admin-style", $my_plugins_url . $post['type'] . '_admin.css' );
+            }
+        }
     }
 
 
@@ -165,7 +179,7 @@ abstract class zMCustomPostTypeBase {
             }
 
             if ( empty( $taxonomy['menu_name'] ) ) {
-                $taxonomy['menu_name'] = $taxonomy['name'];
+                $taxonomy['menu_name'] = ucfirst( $taxonomy['name'] );
             }
 
             $labels = array(
@@ -210,17 +224,14 @@ abstract class zMCustomPostTypeBase {
      */
     public function enqueueScripts(){
 
+        if ( is_admin() ) return;
+
         $dependencies[] = 'jquery';
         $my_plugins_url = $this->asset_url;
 
         foreach( $this->post_type as $post ){
-            if ( is_admin() ){
-                $admin = '_admin';
-            } else {
-                $admin = null;
-            }
-            wp_enqueue_script( "zm-ev-{$post['type']}{$admin}-script", $my_plugins_url . $post['type'] . $admin . '.js', $dependencies  );
-            wp_enqueue_style(  "zm-ev-{$post['type']}{$admin}-style", $my_plugins_url . $post['type'] . $admin . '.css' );
+            wp_enqueue_script( "zm-ev-{$post['type']}-script", $my_plugins_url . $post['type'] . '.js', $dependencies  );
+            wp_enqueue_style(  "zm-ev-{$post['type']}-style", $my_plugins_url . $post['type'] .  '.css' );
         }
     }
 
@@ -414,9 +425,6 @@ abstract class zMCustomPostTypeBase {
 
         if ( empty( $_POST['post_ID'] ) )
             return;
-
-        // if ( ! wp_verify_nonce( $_POST['myplugin_noncename'], plugin_basename( __FILE__ ) ) )
-        //     return;
 
         /**
          * This is done to derive our meta keys, since wp doesn't scale well from a code
