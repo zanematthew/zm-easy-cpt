@@ -347,7 +347,7 @@ add_action('zm_easy_cpt_create_assets','zm_create_assets', 99, 2);
 function zm_base_build_select( $params=null ){
 
     extract( $params );
-
+    $class = $key;
     if ( empty( $extra_data ) )
         $extra_data = null;
 
@@ -369,12 +369,12 @@ function zm_base_build_select( $params=null ){
     ?>
     <fieldset class="zm-ev-state-container">
     <label class="zm-base-title">State</label>
-    <select name="<?php echo $key; ?>" <?php echo $multiple; ?> <?php echo $extra_data; ?> class="<?php echo $extra_class; ?>" id="">
+    <select name="<?php echo $key; ?>" <?php echo $multiple; ?> <?php echo $extra_data; ?> class="<?php echo $extra_class; ?> <?php print $class; ?>" id="">
         <?php if ( $default ) : ?><option value=""><?php print $default; ?></option><?php endif; ?>
         <?php foreach( $items as $item ) : ?>
             <option value="<?php print $item['id']; ?>"
                 <?php if ( is_array( $current ) ) : foreach( $current as $c ) : selected( $item['id'], $c ); ?>
-                <?php endforeach; else : selected( $item['id'], $current ); endif; ?>>
+                <?php endforeach; else : selected( $item['id'], $current ); endif; ?> class="<?php print $item['id']; ?>">
                 <?php print $item['name']; ?>
             </option>
         <?php endforeach; ?>
