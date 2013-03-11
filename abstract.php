@@ -94,6 +94,9 @@ abstract class zMCustomPostTypeBase {
             if ( empty( $post_type['menu_name'] ) )
                 $post_type['menu_name'] = $post_type['name'];
 
+            if ( empty( $post_type['description'] ) )
+                $post_type['description'] = null;
+
             $labels = array(
                 'name' => _x( $post_type['name'], 'post type general name'),
                 'singular_name' => _x( $post_type['singular_name'], 'post type singular name'),
@@ -124,7 +127,7 @@ abstract class zMCustomPostTypeBase {
                 'supports' => $supports,
                 'rewrite' => $rewrite,
                 'hierarchical' => true,
-                'description' => 'None for now GFYS',
+                'description' => $post_type['description'],
                 'taxonomies' => $taxonomies,
                 'public' => true,
                 'show_ui' => true,
