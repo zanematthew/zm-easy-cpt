@@ -1,14 +1,9 @@
-Requirements
-============
-
-* WordPress (Latest)
-
 Description
 ===========
 
 Organize and standarize the creation of Custom Post Types and Custom Taxonomies in WordPress.
 
-Creates an interface, seperates ...
+Creates an interface, seperates concerns, add structure, yet be able to break out of it...
 
 Features
 ========
@@ -33,6 +28,12 @@ Usage
 1. Start developing...
 
 
+Requirements
+============
+
+* WordPress (Latest)
+
+
 Documentation
 =============
 
@@ -50,6 +51,7 @@ Including the library <a id="including-the-library"></a>
 
 We require the core plugin file and then run the function `zm_easy_cpt_reqiure()`, which will auto-require the needed files.
 1.
+
 ```
 php
 <?php
@@ -63,6 +65,7 @@ zm_easy_cpt_reqiure( plugin_dir_path(__FILE__) );
 ?>
 ```
 * Optional We can add the following code below the WordPress plugin headers to ensure that zM Easy Custom Post Types is succesfully installed.
+
 ```
 php
 <?php
@@ -88,7 +91,8 @@ We are going to seperate our post type into two files. The first file will inclu
 1. Create a folder named `post_types`
 1. Create a file inside of `post_types` named `NAME_OF_YOUR_POST_TYPE.php` with the following:
 
-```php
+```
+php
 <?php
 $books = New Books();
 $books->post_type = array(
@@ -136,8 +140,10 @@ $plugin->post_type = array(
 );
 ?>
 ```
+
 1. Create a folder called `functions`
 1. Create a file named `{my_post_type}_functions.php` with the following:
+
 ```
 <?php
 Class Books extends zMCustomPostTypeBase {
@@ -154,7 +160,8 @@ Class Books extends zMCustomPostTypeBase {
         parent::__construct();
     }
 }
-?>```
+?>
+```
 
 1. (Bonus) If you want to include css and js files for each `post_type` and have them load ONLY on the admin post type pages then add the code below to your activation hook and re-activate the plugin.
 
@@ -185,7 +192,8 @@ $books->taxonomy = array(
         'hierarchical' => false
         )
 );
-?>```
+?>
+```
 
 
 Creating Meta Fields <a id="#creating-meta-fields"></a>
