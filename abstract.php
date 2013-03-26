@@ -56,6 +56,7 @@ abstract class zMCustomPostTypeBase {
      * @todo Support Capabilities
      */
     public function registerPostType( $args=NULL ) {
+
         $taxonomies = $supports = array();
 
         // our white list taken from http://codex.wordpress.org/Function_Reference/register_post_type see 'supports'
@@ -94,7 +95,19 @@ abstract class zMCustomPostTypeBase {
             if ( empty( $post_type['menu_name'] ) )
                 $post_type['menu_name'] = $post_type['name'];
 
-            $labels = array(
+            if ( ! isset( $post_type['show_ui'] ) )
+                $post_type['show_ui'] = true;
+
+            if ( ! isset( $post_type['show_in_menu'] ) )
+                $post_type['show_in_menu'] = true;
+
+            if ( ! isset( $post_type['show_in_admin_bar'] ) )
+                $post_type['show_in_admin_bar'] = true;
+
+            if ( ! isset( $post_type['show_ui_nav_menu'] ) )
+                $post_type['show_ui_nav_menu'] = true;
+
+        $labels = array(
                 'name' => _x( $post_type['name'], 'post type general name'),
                 'singular_name' => _x( $post_type['singular_name'], 'post type singular name'),
                 'add_new' => _x('Add New ' . $post_type['singular_name'] . '', 'something'),
@@ -110,7 +123,6 @@ abstract class zMCustomPostTypeBase {
                 );
 
             foreach ( $post_type['supports'] as $temp ) {
-
                 if ( in_array( $temp, $white_list['supports'] ) ) {
                     array_push( $supports, $temp );
                 } else {
@@ -127,10 +139,11 @@ abstract class zMCustomPostTypeBase {
                 'description' => 'None for now GFYS',
                 'taxonomies' => $taxonomies,
                 'public' => true,
-                'show_ui' => true,
-                'show_in_menu' => true,
+                'show_ui' => $post_type['show_ui'],
+                // 'show_in_menu' => $show_in_menu,
+                // 'show_in_admin_bar' => $show_in_admin_bar,
+                // 'show_in_nav_menus' => $show_ui_nav_menu,
                 'menu_position' => 5,
-                'show_in_nav_menus' => true,
                 'publicly_queryable' => true,
                 'exclude_from_search' => false,
                 'has_archive' => true,
@@ -452,5 +465,18 @@ abstract class zMCustomPostTypeBase {
                 update_post_meta( $_POST['post_ID'], $key, $value );
             }
         }
+    }
+
+
+    /**
+     * Attempts to locate the called template from the child or parent theme.
+     * If not it loads the one in the plugin.
+     *
+     * @param $template The file name, "settings.php"
+     * @param $views_dir The path to the template/view as seen in the plugin, "views/"
+     */
+    public function loadTemplate( $template=null, $views_dir=null ){
+        $template = ($overridden_template = locate_template( $template )) ? $overridden_template : $views_dir . $template;
+        load_template( $template );
     }
 } // End 'CustomPostTypeBase'
