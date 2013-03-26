@@ -244,7 +244,7 @@ function zm_base_build_options( $taxonomy=null, $value=null ) {
  * Example, given a post type of "contact" the following files
  * are automatically required for you:
  * my-plugin/post_type/contact.php
- * my-plugin/functions/contact_functions.php
+ * my-plugin/controllers/contact_controller.php
  *
  * @param $dir the full path the plugin.
  */
@@ -253,7 +253,7 @@ function zm_easy_cpt_reqiure( $dir=null ){
     /**
      * Read the contents of the directory into an array.
      */
-    $tmp_controllers = scandir( $dir . 'functions/' );
+    $tmp_controllers = scandir( $dir . 'controllers/' );
 
     /**
      * This is our list of items to ignore from the scaned directory
@@ -285,11 +285,11 @@ function zm_easy_cpt_reqiure( $dir=null ){
      */
     $models = array();
     foreach( $tmp_controllers as $controller ) {
-        require_once $dir . 'functions/'.$controller;
+        require_once $dir . 'controllers/'.$controller;
 
         $model = array_shift( explode( '_', $controller ) );
         $models[] = $model;
-        require_once $dir . 'post_types/'.$model . '.php';
+        require_once $dir . 'models/'.$model . '.php';
     }
 }
 
@@ -344,6 +344,12 @@ function zm_create_assets( $models=null, $dir=null ){
 }
 add_action('zm_easy_cpt_create_assets','zm_create_assets', 99, 2);
 
+
+/**
+ * @param $items (array) id, name, of items to build option boxes from
+ * @param $current (array|string) item_id to match against, $array = json_decode(json_encode($object), true);
+ *
+ */
 function zm_base_build_select( $params=null ){
 
     extract( $params );
@@ -368,7 +374,7 @@ function zm_base_build_select( $params=null ){
         $current = false;
     ?>
     <fieldset class="zm-ev-state-container">
-    <label class="zm-base-title">State</label>
+    <?php if ( ! empty( $label ) ) : ?><label class="zm-base-title">State</label><?php endif; ?>
     <select name="<?php echo $key; ?>" <?php echo $multiple; ?> <?php echo $extra_data; ?> class="<?php echo $extra_class; ?> <?php print $class; ?>" id="">
         <?php if ( $default ) : ?><option value=""><?php print $default; ?></option><?php endif; ?>
         <?php foreach( $items as $item ) : ?>
