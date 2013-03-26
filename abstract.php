@@ -107,7 +107,6 @@ abstract class zMCustomPostTypeBase {
             if ( ! isset( $post_type['show_ui_nav_menu'] ) )
                 $post_type['show_ui_nav_menu'] = true;
 
-        $labels = array(
             if ( empty( $post_type['description'] ) )
                 $post_type['description'] = null;
 
