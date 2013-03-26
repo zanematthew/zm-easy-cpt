@@ -108,6 +108,10 @@ abstract class zMCustomPostTypeBase {
                 $post_type['show_ui_nav_menu'] = true;
 
         $labels = array(
+            if ( empty( $post_type['description'] ) )
+                $post_type['description'] = null;
+
+            $labels = array(
                 'name' => _x( $post_type['name'], 'post type general name'),
                 'singular_name' => _x( $post_type['singular_name'], 'post type singular name'),
                 'add_new' => _x('Add New ' . $post_type['singular_name'] . '', 'something'),
@@ -136,7 +140,7 @@ abstract class zMCustomPostTypeBase {
                 'supports' => $supports,
                 'rewrite' => $rewrite,
                 'hierarchical' => true,
-                'description' => 'None for now GFYS',
+                'description' => $post_type['description'],
                 'taxonomies' => $taxonomies,
                 'public' => true,
                 'show_ui' => $post_type['show_ui'],
