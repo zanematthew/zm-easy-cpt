@@ -9,13 +9,14 @@ abstract class zMCustomPostTypeBase {
     public $post_type;
     public $meta_keys = array();
     public $asset_url;
+    public $dependencies;
 
     public function __construct() {
 
         add_filter( 'post_class', array( &$this, 'addPostClass' ) );
         add_action( 'init', array( &$this, 'abstractInit' ) );
-        add_action( 'admin_init', array( &$this, 'adminInit' ) );
         add_action( 'wp_head', array( &$this, 'baseAjaxUrl' ) );
+        add_action( 'admin_enqueue_scripts', array( &$this, 'admin_enqueue_scripts' ) );
 
         if ( is_admin() ){
             add_action( 'add_meta_boxes', array( &$this, 'metaSection' ) );
@@ -33,19 +34,24 @@ abstract class zMCustomPostTypeBase {
         $this->enqueueScripts();
     }
 
-    public function adminInit(){
 
-        $dependencies[] = 'jquery';
-        $my_plugins_url = $this->asset_url;
+    public function admin_enqueue_scripts( $hook ){
 
-        foreach( $this->post_type as $post ){
-            if ( ! empty( $_GET['post_type'] ) && $_GET['post_type'] == $post['type'] ){
-                wp_enqueue_script( "zm-ev-{$post['type']}-admin-script", $my_plugins_url . $post['type'] . '_admin.js', $dependencies  );
-                wp_enqueue_style(  "zm-ev-{$post['type']}-admin-style", $my_plugins_url . $post['type'] . '_admin.css' );
-            }
+        global $post_type;
+
+        if ( $this->post_type[0]['type'] != $post_type ) return;
+
+        /**
+         * Load our datetime picker on edit post page or
+         * adding new post page and only on our cpt
+         */
+        if ( $hook == 'post-new.php' // New post pages
+            || $hook == 'post.php' // Edit post pages
+            ){
+            wp_enqueue_script( "{$this->post_type[0]['type']}-admin-script", $this->asset_url . $this->post_type[0]['type'] . '_admin.js', $this->dependencies_js  );
+            wp_enqueue_style(  "{$this->post_type[0]['type']}-admin-style", $this->asset_url . $this->post_type[0]['type'] . '_admin.css', $this->dependencies_css );
         }
     }
-
 
     /**
      * Regsiter an unlimited number of CPTs based on an array of parmas.
