@@ -1,8 +1,10 @@
 <?php
+
 /**
  * This file contains the Base Class that is to be extended by your child class
  * to regsiter a Custom Post Type, Custom Taxonomy, and Custom Meta Fields.
  */
+if ( class_exists( 'zMCustomPostTypeBase' ) ) return;
 abstract class zMCustomPostTypeBase {
 
     public $meta_section = array();
