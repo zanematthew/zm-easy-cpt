@@ -78,7 +78,8 @@ abstract class zMCustomPostTypeBase {
                 'comments',
                 'custom-fields',
                 'trackbacks',
-                'revisions'
+                'revisions',
+                'page-attributes'
                 );
 
         foreach ( $this->post_type as $post_type ) {
