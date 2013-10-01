@@ -11,49 +11,24 @@ abstract class zMCustomPostTypeBase {
     public $post_type;
     public $meta_keys = array();
     public $asset_url;
-    public $dependencies;
+    private $current_post_type;
 
     public function __construct() {
-
         add_filter( 'post_class', array( &$this, 'addPostClass' ) );
         add_action( 'init', array( &$this, 'abstractInit' ) );
         add_action( 'wp_head', array( &$this, 'baseAjaxUrl' ) );
-        add_action( 'admin_enqueue_scripts', array( &$this, 'admin_enqueue_scripts' ) );
-
-        if ( is_admin() ){
-            add_action( 'add_meta_boxes', array( &$this, 'metaSection' ) );
-            add_action( 'save_post', array( &$this, 'metaSave' ) );
-        }
     }
 
 
-    /**
-     * Run the following methods when this Class is called
-     */
-    public function abstractInit(){
-        $this->registerPostType();
-        $this->registerTaxonomy();
-        $this->enqueueScripts();
+    // Use this to load admin assets
+    public function load_assets( $my_cpt=null ){
+        $dependencies[] = 'jquery';
+        $my_plugins_url = $this->asset_url;
+
+        wp_enqueue_script( "zm-ev-{$my_cpt}-admin-script", $my_plugins_url . $my_cpt . '_admin.js', $dependencies  );
+        wp_enqueue_style(  "zm-ev-{$my_cpt}-admin-style", $my_plugins_url . $my_cpt . '_admin.css' );
     }
 
-
-    public function admin_enqueue_scripts( $hook ){
-
-        global $post_type;
-
-        if ( $this->post_type[0]['type'] != $post_type ) return;
-
-        /**
-         * Load our datetime picker on edit post page or
-         * adding new post page and only on our cpt
-         */
-        if ( $hook == 'post-new.php' // New post pages
-            || $hook == 'post.php' // Edit post pages
-            ){
-            wp_enqueue_script( "{$this->post_type[0]['type']}-admin-script", $this->asset_url . $this->post_type[0]['type'] . '_admin.js', $this->dependencies_js  );
-            wp_enqueue_style(  "{$this->post_type[0]['type']}-admin-style", $this->asset_url . $this->post_type[0]['type'] . '_admin.css', $this->dependencies_css );
-        }
-    }
 
     /**
      * Regsiter an unlimited number of CPTs based on an array of parmas.
@@ -101,8 +76,9 @@ abstract class zMCustomPostTypeBase {
                 $rewrite = $post_type['rewrite'];
             }
 
-            if ( empty( $post_type['menu_name'] ) )
+            if ( empty( $post_type['menu_name'] ) ){
                 $post_type['menu_name'] = $post_type['name'];
+            }
 
             if ( ! isset( $post_type['show_ui'] ) )
                 $post_type['show_ui'] = true;
@@ -204,7 +180,7 @@ abstract class zMCustomPostTypeBase {
             }
 
             if ( empty( $taxonomy['menu_name'] ) ) {
-                $taxonomy['menu_name'] = ucfirst( $taxonomy['name'] );
+                $taxonomy['menu_name'] = ucfirst( str_replace('_', ' ', $taxonomy['name'] ) );
             }
 
             $labels = array(
@@ -392,6 +368,9 @@ abstract class zMCustomPostTypeBase {
 
                 $label = $field['label'];
             }
+            // $name = '_' . $name;
+
+var_dump(get_post_meta( $post->ID, "{$name}", true));
 
             if ( ! empty( $field['value'] ) ){
                 $tmp_value = $field['value'];
@@ -442,6 +421,7 @@ abstract class zMCustomPostTypeBase {
      * Saves post meta information based on $_POST['post_id']
      * @todo Add support for $post_id
      * @todo Use a nonce?
+     * @todo store meta keys
      */
     public function metaSave( $post_id=null ){
 
@@ -467,6 +447,9 @@ abstract class zMCustomPostTypeBase {
             }
         }
 
+// print_r( $_POST );
+// print_r( $new_meta );
+// die();
         $current_meta = get_post_custom( $_POST['post_ID'] );
 
         foreach( $new_meta as $key => $value ){
@@ -490,5 +473,345 @@ abstract class zMCustomPostTypeBase {
     public function loadTemplate( $template=null, $views_dir=null ){
         $template = ($overridden_template = locate_template( $template )) ? $overridden_template : $views_dir . $template;
         load_template( $template );
+    }
+
+
+    // This would be better as its own class
+    public function load_columns( $my_cpt=null ){
+
+        if ( isset( $_GET['post_type'] ) ){
+            $this->current_post_type = $my_cpt;
+        }
+
+        global $pagenow;
+
+        if ( $pagenow == 'edit.php' && isset( $_GET['post_type'] ) ){
+            add_filter( 'manage_edit-' . $this->current_post_type . '_columns', array( &$this, 'custom_columns' ) );
+            add_action( 'manage_'.$this->current_post_type.'_posts_custom_column', array( &$this, 'render_custom_columns' ), 10, 2 );
+            add_filter( 'manage_edit-' . $this->current_post_type . '_sortable_columns', array( &$this, 'sortable_custom_columns' ) );
+        }
+    }
+
+
+    public function columns(){
+        // get taxonomies for this post type
+        $tax_objs = get_object_taxonomies( $this->current_post_type, 'objects' );
+
+        // defaults
+        $columns = array(
+            'cb' => '<input type="checkbox"/>',
+            'title' => 'Title'
+            );
+
+        // Build our columns array and remove _ from the taxonomy name and use it as the column label
+        foreach( $tax_objs as $tax_obj ){
+            $columns[ $tax_obj->name ] = ucfirst( str_replace('_', ' ', $tax_obj->label ) );
+        }
+        $columns['date'] = 'Date';
+
+        return $columns;
+    }
+
+
+    public function custom_columns(){
+        return $this->columns();
+    }
+
+
+    public function render_custom_columns( $column_name, $post_id ){
+        if ( ! in_array( $column_name, array('cb','title','date') ) ){
+            // would be nice to filter this
+            // echo get_the_term_list( $post_id, $column_name, '',', ' );
+            $tags = get_the_terms( $post_id, $column_name );
+            if ( $tags ){
+                $count = count( $tags );
+                $i = 0;
+                foreach( $tags as $tag ){
+                    echo '<a href="'.admin_url('edit.php?'.$column_name.'=' . $tag->slug . '&post_type=' . $this->current_post_type).'">' . $tag->name . '</a>';
+                    echo ( $count - 1) == $i ? null : ", ";
+                    $i++;
+                }
+            }
+        }
+    }
+
+
+    /**
+     * This method is a filter for the "manage_edit-submission_sortable_columns"
+     * and dynamically builds a list of the columns that will be sortable.
+     *
+     * @param $columns
+     * @return $columns
+     */
+    public function sortable_custom_columns( $columns ) {
+        $columns = array();
+        foreach( $this->columns() as $k => $v ){
+            $columns[ $k ] = $k;
+        }
+        // We don't want to add sorting to our checkbox,
+        // so we remove it
+        unset( $columns['cb'] );
+
+        return $columns;
+    }
+    //
+
+
+    /**
+     * Handles setting up the query to display our content for the table
+     */
+    public function sort_downloads( $vars ) {
+
+        if ( isset( $vars['post_type'] ) && 'submission' == $vars['post_type'] ) {
+
+
+            /**
+             * If this is a regular search request we just return the $vars!
+             */
+            if ( isset( $_GET['s'] ) && ! empty( $_GET['s'] ) ) {
+                return $vars;
+            }
+
+            if ( isset( $_GET['orderby'] ) && ! empty( $_GET['orderby'] ) ){
+                foreach( $this->columns() as $k => $v ){
+                    if ( isset( $vars['orderby'] ) && $k == $vars['orderby']
+                        && $vars['orderby'] != 'date'
+                        && $vars['orderby'] != 'tag' ){
+                        $vars = array_merge(
+                            $vars,
+                            array(
+                                'meta_key' => '_' . $k,
+                                'orderby' => 'meta_value'
+                            )
+                        );
+                    }
+                }
+
+                if ( isset( $vars['orderby'] ) && $vars['orderby'] == 'tag' ){
+
+                    /**
+                     * All this to sort by tag?
+                     *
+                     * First we get ALL tags sorted by our 'order' param. Then we
+                     * get ALL form submissions that are in our list of tag ids.
+                     * From here we pass this list into our query vars as the
+                     * post__in parameter, finally a sorted table of tags.
+                     */
+                    $tags_obj = get_terms('tag', array('orderby' => 'name', 'order'=> strtoupper($_GET['order'])) );
+                    foreach( $tags_obj as $tag_obj ){
+                        // echo $tag_obj->name . '<br />';
+                        $term_ids[] = $tag_obj->term_id;
+                    }
+
+                    $args = array(
+                        'post_type' => 'submission',
+                        'post_status' => 'publish',
+                        'posts_per_page' => -1,
+                        'orderby' => 'tax_query',
+                        'tax_query' => array(
+                            array(
+                                'taxonomy' => 'tag',
+                                'field' => 'id',
+                                'terms' => $term_ids,
+                                'operator' => 'IN'
+                            )
+                        )
+                    );
+
+                    $tagged_submissions = New WP_Query( $args );
+                    foreach( $tagged_submissions->posts as $tagged_submission ){
+                        $submission_ids[] = $tagged_submission->ID;
+                    }
+                    wp_reset_postdata();
+
+                    $vars = array_merge(
+                        $vars,
+                        array(
+                            'post_status' => 'publish',
+                            'post__in' => $submission_ids
+                        )
+                    );
+                    // We remove tag from our query, since it will break our query
+                    unset( $vars['tag'] );
+                }
+            }
+
+
+            /**
+             * Build query campaign AND tag (from select)
+             */
+            if ( isset( $_GET['select_tag'] ) && ! empty( $_GET['select_tag'] )
+                && isset( $_GET['campaign_form_slug'] ) && ! empty( $_GET['campaign_form_slug'] ) ){
+                $vars = array_merge(
+                    $vars,
+                        array(
+                            'meta_query' => array(
+                                array(
+                                    'key' => '_campaign_form_slug',
+                                    'value' => $_GET['campaign_form_slug']
+                                )
+                            ),
+                            'tax_query' => array(
+                                array(
+                                    'taxonomy' => 'tag',
+                                    'field'    => 'slug',
+                                    'terms'    => $_GET['select_tag']
+                                )
+                            )
+                        )
+                );
+            }
+
+            /**
+             * Build query for campaign form
+             */
+            elseif ( ! empty( $_GET['campaign_form_slug'] ) ){
+                $vars = array_merge(
+                    $vars,
+                    array(
+                        'meta_query' => array(
+                            array(
+                                'key' => '_campaign_form_slug',
+                                'value' => $_GET['campaign_form_slug']
+                            )
+                        )
+                    )
+                );
+                unset( $vars['tag'] );
+            }
+
+            elseif ( isset( $_GET['s'] ) && empty( $_GET['tag'] ) ){
+
+                /**
+                 * We have no tags, just return
+                 */
+                if ( isset( $_GET['select_tag'] ) && empty( $_GET['select_tag'] ) ){
+                    return $vars;
+                }
+
+                /**
+                 * Handle sorting, again?
+                 */
+                if ( isset( $_GET['orderby'] ) && ! empty( $_GET['orderby'] ) ){
+                    foreach( $this->columns() as $k => $v ){
+                        if ( isset( $vars['orderby'] ) && $k == $vars['orderby']
+                            && $vars['orderby'] != 'date'
+                            && $vars['orderby'] != 'tag' ){
+                            $vars = array_merge(
+                                $vars,
+                                array(
+                                    'meta_key' => '_' . $k,
+                                    'orderby' => 'meta_value'
+                                )
+                            );
+                        }
+                    }
+
+                    if ( isset( $vars['orderby'] ) && $vars['orderby'] == 'tag' ){
+
+                        /**
+                         * All this to sort by tag?
+                         *
+                         * First we get ALL tags sorted by our 'order' param. Then we
+                         * get ALL form submissions that are in our list of tag ids.
+                         * From here we pass this list into our query vars as the
+                         * post__in parameter, finally a sorted table of tags.
+                         */
+                        $tags_obj = get_terms('tag', array('orderby'=> strtoupper($_GET['order'])) );
+                        foreach( $tags_obj as $tag_obj ){
+                            $term_ids[] = $tag_obj->term_id;
+                        }
+
+
+                        $args = array(
+                            'post_type' => 'submission',
+                            'post_status' => 'publish',
+                            'posts_per_page' => -1,
+                            'orderby' => 'tag',
+                            'order' => 'ASC',
+                            'tax_query' => array(
+                                array(
+                                    'taxonomy' => 'tag',
+                                    'field' => 'id',
+                                    'terms' => $term_ids,
+                                    'operator' => 'IN'
+                                )
+                            )
+                        );
+                        $tagged_submissions = New WP_Query( $args );
+                        foreach( $tagged_submissions->posts as $tagged_submission ){
+                            $submission_ids[] = $tagged_submission->ID;
+                        }
+                        wp_reset_postdata();
+
+                        $vars = array_merge(
+                            $vars,
+                            array(
+                                'post__in' => $submission_ids
+                            )
+                        );
+                        // We remove tag from our query, since it will break our query
+                        unset( $vars['tag'] );
+                    }
+                    return $vars;
+                }
+
+                if ( empty( $vars['s'] ) ){
+                    $tag = $_GET['select_tag'];
+                } else {
+                    $tag = $vars['s'];
+                }
+
+                if ( empty( $tag ) )
+                    return $vars;
+
+                unset( $vars['s'] );
+                unset( $vars['tag'] );
+                $vars = array_merge(
+                    $vars,
+                    array(
+                        'tax_query' => array(
+                            array(
+                                'taxonomy' => 'tag',
+                                'field'    => 'slug',
+                                'terms'    => $tag
+                            )
+                        )
+                    )
+                );
+            }
+
+            // handle tags
+            // @package tags
+            elseif (
+                isset( $_GET['tag'] )
+                && empty( $_GET['s'] )
+                || isset( $_GET['select_tag'] )
+                ){
+                echo 'selected tag';
+
+                $vars = array_merge(
+                    $vars,
+                    array(
+                        'tax_query' => array(
+                            array(
+                                'taxonomy' => 'tag',
+                                'field'    => 'slug',
+                                'terms'    => $vars['tag']
+                            )
+                        )
+                    )
+                );
+                // We remove tag from our query, since it will break our query
+                unset( $vars['tag'] );
+            }
+
+            // Handle sorting of meta keys (table columns)
+            else {
+                // echo 'default';
+            }
+        }
+
+        return $vars;
     }
 } // End 'CustomPostTypeBase'
