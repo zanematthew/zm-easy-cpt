@@ -15,7 +15,6 @@ abstract class zMCustomPostTypeBase {
 
     public function __construct() {
         add_filter( 'post_class', array( &$this, 'addPostClass' ) );
-        add_action( 'init', array( &$this, 'abstractInit' ) );
         add_action( 'wp_head', array( &$this, 'baseAjaxUrl' ) );
     }
 
@@ -235,54 +234,6 @@ abstract class zMCustomPostTypeBase {
             wp_enqueue_style(  "zm-ev-{$post['type']}-style", $my_plugins_url . $post['type'] .  '.css' );
         }
     }
-
-    /**
-     * Delets a post given the post ID, post will be moved to the trash
-     *
-     * @package Ajax
-     * @param (int) post id
-     * @uses is_wp_error
-     * @uses is_user_logged_in
-     * @uses wp_trash_post
-     *
-     * @todo generic validateUser method, check ajax refer and if user can (?)
-     */
-    public function postTypeDelete( $id=null ) {
-
-        // check_ajax_referer( 'bmx-re-ajax-forms', 'security' );
-
-        $id = (int)$_POST['post_id'];
-
-        if ( !is_user_logged_in() )
-            return false;
-
-        if ( is_null( $id )  ) {
-            wp_die( 'I need a post_id to kill!');
-        } else {
-            $result = wp_trash_post( $id );
-            if ( is_wp_error( $result ) ) {
-                print_r( $result );
-            } else {
-                print_r( $result );
-            }
-        }
-
-        die();
-    } // postTypeDelete
-
-
-    /**
-     * Print our ajax url in the footer
-     *
-     * @uses plugin_dir_url()
-     * @uses admin_url()
-     *
-     * @todo baseAjaxUrl() consider moving to abstract
-     * @todo consider using localize script
-     */
-    public function baseAjaxUrl() {
-        print '<script type="text/javascript"> var ajaxurl = "'. admin_url("admin-ajax.php") .'";</script>';
-    } // End 'baseAjaxUrl'
 
 
     /**
