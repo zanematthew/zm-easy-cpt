@@ -21,24 +21,24 @@ function zm_create_assets( $params=null ){
     // $models
     // $admin_only
 
-    if ( ! is_dir( $dir . 'assets' ) ){
+    // if ( ! is_dir( $dir . 'assets' ) ){
         if ( ! wp_mkdir_p( $dir . 'assets' ) )
             wp_die("Couldn't make assets dir, don't run the action or make the dir writeable");
-    }
+    // }
 
-$utils = New zMUtils;
+    $utils = New zMUtils;
 
     $dir = empty( $dir ) ? $utils->plugin_root_dir() : $dir;
     $assets_dir = $dir . 'assets/';
 
+    $utils->assets_dir = $assets_dir;
+
+    $files = false;
 echo '<pre>';
-print_r( $assets_dir );
-var_dump( $admin_only );
-var_dump( $dir );
-// die();
-
-
     foreach( $models as $model ){
+echo "model: $model";
+
+        $utils->model = $model;
 
         if ( $admin_only ){
             $files = $utils->admin_assets();
@@ -47,11 +47,13 @@ var_dump( $dir );
             $files = $utils->frontend_assets();
         }
 
-        // foreach( $files as $file ){
-        //     if ( ! file_exists( $file['file'] ) ){
-        //         file_put_contents( $file['file'], $file['desc'] );
-        //     }
-        // }
+        foreach( $files as $file ){
+            if ( ! file_exists( $file['file'] ) ){
+                echo "Creating file: {$file['file']} for the model: {$model}\n";
+                $r = file_put_contents( $file['file'], $file['desc'] );
+                var_dump($r);
+            }
+        }
     }
 print_r( $files );
 echo '</pre>';
@@ -60,8 +62,8 @@ echo '</pre>';
 
 Class zMUtils {
 
-    private $models;
-    private $assets_dir;
+    public $model;
+    public $assets_dir;
     private $plugins_root_dir;
 
     public function plugin_root_dir(){
@@ -74,12 +76,12 @@ Class zMUtils {
 
         $files = array(
             array(
-                'file' => $assets_dir . $model . '.css',
-                'desc' => "/* \nThis file is automatically created for you. \n It is your CSS file for the {$model} model. Do NOT place admin styling here, instead use the {$model}_admin.css file. \n\nCreated On: {$date} */"
+                'file' => $this->assets_dir . $this->model . '.css',
+                'desc' => "/* \nThis file is automatically created for you. \n It is your CSS file for the {$this->model} model. Do NOT place admin styling here, instead use the {$this->model}_admin.css file. \n\nCreated On: {$date} */"
             ),
             array(
-                'file' => $assets_dir . $model . '.js',
-                'desc' => "/* \nThis file is automatically created for you. \n It is your JS file for the {$model} model. Do NOT place admin JS here, instead use the {$model}_admin.js file. \n\nCreated On: {$date} */"
+                'file' => $this->assets_dir . $this->model . '.js',
+                'desc' => "/* \nThis file is automatically created for you. \n It is your JS file for the {$this->model} model. Do NOT place admin JS here, instead use the {$this->model}_admin.js file. \n\nCreated On: {$date} */"
             )
         );
         return $files;
@@ -91,12 +93,12 @@ Class zMUtils {
 
         $files = array(
             array(
-                'file' => $assets_dir . $model . '_admin.css',
-                'desc' => "/* \nThis file is automatically created for you. \n It is your Admin CSS file for the {$model} model. \n\nCreated On: {$date} */"
+                'file' => $this->assets_dir . $this->model . '_admin.css',
+                'desc' => "/* \nThis file is automatically created for you. \n It is your Admin CSS file for the {$this->model} model. \n\nCreated On: {$date} */"
             ),
             array(
-                'file' => $assets_dir . $model . '_admin.js',
-                'desc' => "/* \nThis file is automatically created for you. \n It is your Admin JS file for the {$model} model. \n\nCreated On: {$date} */"
+                'file' => $this->assets_dir . $this->model . '_admin.js',
+                'desc' => "/* \nThis file is automatically created for you. \n It is your Admin JS file for the {$this->model} model. \n\nCreated On: {$date} */"
             )
         );
         return $files;
