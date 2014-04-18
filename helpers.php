@@ -1,5 +1,6 @@
 <?php
 
+if ( ! class_exists( 'zMHelpers' ) ) return;
 Class zMHelpers {
 
     /**

@@ -1,5 +1,5 @@
 <?php
-
+if ( ! class_exists( 'zMSubmission' ) ) return;
 Class zMSubmission {
 
     /**
