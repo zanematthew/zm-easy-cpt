@@ -19,7 +19,7 @@ require_once plugin_dir_path( __FILE__ ) . 'abstract.php';
  *
  * @param $dir the full path the plugin.
  */
-if ( class_exists( 'zMCore' ) ) return;
+if ( ! class_exists( 'zMCore' ) ) {
 Class zMCore {
     public function zm_easy_cpt_reqiure( $dir=null ){
 
@@ -65,4 +65,5 @@ Class zMCore {
             require_once $dir . 'models/'.$model . '.php';
         }
     }
+}
 }

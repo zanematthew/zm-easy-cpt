@@ -4,7 +4,7 @@
  * This file contains the Base Class that is to be extended by your child class
  * to register a Custom Post Type, Custom Taxonomy, and Custom Meta Fields.
  */
-if ( class_exists( 'zMCustomPostTypeBase' ) ) return;
+if ( ! class_exists( 'zMCustomPostTypeBase' ) ) {
 abstract class zMCustomPostTypeBase {
 
     public $post_type;
@@ -1432,3 +1432,4 @@ abstract class zMCustomPostTypeBase {
     }
 
 } // End 'CustomPostTypeBase'
+}
