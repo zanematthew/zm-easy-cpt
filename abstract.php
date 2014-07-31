@@ -687,6 +687,11 @@ abstract class zMCustomPostTypeBase {
         if ( empty( $_POST['post_ID'] ) )
             return;
 
+        global $post_type;
+
+        if ( $this->post_type != $post_type )
+            return;
+            
         /**
          * This is done to derive our meta keys, since wp doesn't scale well from a code
          * point of view. There's no direct access to post meta keys that don't already exists in
